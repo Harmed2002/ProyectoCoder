@@ -22,7 +22,7 @@ const serverExpress = app.listen(PORT, () => {
 })
 
 //Mongoose DB
-mongoose.connect('mongodb+srv://harmed2002:3gEGKitALiASCMSH@cluster0.0kdtqxd.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://harmed2002:<password>@cluster0.0kdtqxd.mongodb.net/?retryWrites=true&w=majority')
 	.then(async () => console.log('DB is connected'))
 	.catch(() => console.log('Error in connection'))
 
