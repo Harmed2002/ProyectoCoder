@@ -42,31 +42,42 @@ export function requireAuth(req, res, next) {
 	if (req.session.login) {
 		next(); // Si el usuario está autenticado permite el acceso
 	} else {
-		res.redirect("/login"); // Si no está autenticado, redirige a login
+		res.redirect("/login"); // Si no está autenticado, redirige al login
 	}
-}
+};
 
-// Grabación de sesión
+// Middleware de sesión
 app.use(
 	session({
 		store: MongoStore.create({
 			mongoUrl: process.env.MONGO_URL,
 			mongoOptions: {
-				useNewUrlParser: true, // Manejo de las conexiones a la BD para conectarse al cluster
+				useNewUrlParser: true, // Establezco que la coneción al cluster es mediante URL
 				useUnifiedTopology: true, // Sirve para conectarnos al controlador actual de BD, manejo de de clusters de manera dinámica
 		},
-		ttl: 60, // Duración en la BD en segundos
+		ttl: 60, // Duración de la sesión en la BD (en segundos)
 		}),
 		secret: process.env.SESSION_SECRET,
-		resave: false,
-		saveUninitialized: false,
+		resave: false, // Fuerzo a que intente guardar aunque no tenga modificaciones en los datos
+		saveUninitialized: false, // Fuerzo a que intente guardar aunque no tenga más datos que el id de sesión
 	})
 );
 
-// Socket IO
+// Server
 const serverExpress = app.listen(PORT, () => {
 	console.log(`Server on port ${PORT}`);
 });
+
+app.get('/session', (req, res) => {
+	// console.log(req.session);
+	if (req.session.counter) {
+		req.session.counter++;
+		res.send(`Ingresó ${req.session.counter} veces`);
+	} else {
+		req.session.counter = 1;
+		res.send('Ingresó por primera vez');
+	}
+})
 
 // Rutas
 app.use("/api/users", userRouter);
@@ -94,6 +105,7 @@ app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 app.set("views", path.resolve(__dirname, "./views"));
 
+// Server Socket IO
 const io = new Server(serverExpress);
 
 // Socket IO
@@ -145,10 +157,12 @@ io.on("connection", (socket) => {
 });
 
 app.use("/home", express.static(path.join(__dirname, "/public")));
+
 // Login && Sign Up
 app.use("/login", express.static(path.join(__dirname, "/public")));
 app.use("/logout", express.static(path.join(__dirname, "/public")));
 app.use("/signup", express.static(path.join(__dirname, "/public")));
+
 // Chat
 app.use("/chat", express.static(path.join(__dirname, "/public")));
 
@@ -164,6 +178,7 @@ app.get("/home", requireAuth, async (req, res) => {
 	});
 });
 
+// Login
 app.get("/login", async (req, res) => {
 	res.render("login", {
 		globalCss: "globals.css",
@@ -172,6 +187,7 @@ app.get("/login", async (req, res) => {
 	});
 });
 
+// Logout
 app.get("/logout", async (req, res) => {
 	res.render("logout", {
 		globalCss: "globals.css",
@@ -180,6 +196,7 @@ app.get("/logout", async (req, res) => {
 	});
 });
 
+// Register
 app.get("/signup", async (req, res) => {
 	res.render("signup", {
 		globalCss: "globals.css",
