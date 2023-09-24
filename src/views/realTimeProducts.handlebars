@@ -1,25 +1,65 @@
-<h1>Crear Producto</h1>
-<form id="form">
-    <label for="title">Title</label>
-    <input type="text" required name="title">
+<div class="grid flex-row-reverse row gap-5">
+  <form class="container flex col-md-3" id="idForm">
+    <h5 class="titleForm text-center mt-5">Crear nuevo producto</h5>
+    <div class="row fs-6">
+      <label class="form-label" for="title">Title</label>
+      <input class="form-control" type="text" required name="title" />
+    </div>
 
-    <label for="description">Description</label>
-    <input type="text" required name="description">
+    <div class="row fs-6">
+      <label class="form-label" for="description">Descripcion</label>
+      <input class="form-control" type="text" required name="description" />
+    </div>
+    <div class="row fs-6">
+      <label class="form-label" for="category">Categoria</label>
+      <input class="form-control" type="text" name="category" required />
+    </div>
+    <div class="row fs-6">
+      <label class="form-label" for="price">Precio</label>
+      <input class="form-control" type="number" name="price" required />
+    </div>
+    <div class="row fs-6">
+      <label class="form-label" for="stock">Stock</label>
+      <input class="form-control" type="number" name="stock" required />
+    </div>
+    <div class="row fs-6">
+      <label class="form-label" for="code">Code</label>
+      <input class="form-control" type="text" required name="code" />
+    </div>
 
-    <label for="price">Precio</label>
-    <input type="number" required name="price">
 
-    <label for="stock">Stock</label>
-    <input type="number" required name="stock">
+    <button type="submit" class="btn mt-2 ">Enviar</button>
+  </form>
 
-    <label for="category">Category</label>
-    <input type="text" required name="category">
-
-    <label for="code">Code</label>
-    <input type="text" required name="code">
-
-    <label for="thumbnail">Thumbnail</label>
-    <input type="text" required name="thumbnail">
-
-    <button type="submit">Enviar</button>
-</form><br><br>
+  <div class="container divTable table-responsive col-md-8">
+  <h5 class="text-center mt-5">Listado de productos</h5>
+    <table id="prodTable" class="table table-hover  table-bordered">
+      <thead class="tableHead">
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Titulo</th>
+          <th scope="col">Descripcion</th>
+          <th scope="col">Category</th>
+          <th scope="col">Precio</th>
+          <th scope="col">Thumbnail</th>
+          <th scope="col">Code</th>
+          <th scope="col">Stock</th>
+        </tr>
+      </thead>
+      <tbody class="tableBody">
+        {{#each products}}
+        <tr>
+          <td scope="row">{{this.id}}</td>
+          <td scope="row">{{this.title}}</td>
+          <td scope="row">{{this.description}}</td>
+          <td scope="row">{{this.category}}</td>
+          <td scope="row">{{this.price}}</td>
+          <td scope="row">{{this.thumbnail}}</td>
+          <td scope="row">{{this.code}}</td>
+          <td scope="row">{{this.stock}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>

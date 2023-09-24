@@ -1,97 +1,201 @@
-import express from 'express'
-import mongoose from 'mongoose'
-import { engine } from 'express-handlebars'
-import { Server } from 'socket.io'
+import "dotenv/config";
+import express from "express";
+import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
 
-import path from 'path'
-import { __dirname } from './path.js'
+import path from "path";
+import { engine } from "express-handlebars";
+import { __dirname } from "./path.js";
+import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
 
-import prodsRouter from "./routes/products.routes.js"
-import userRouter from './routes/users.routes.js'
-import cartRouter from "./routes/carts.routes.js"
-import messageRouter from "./routes/messages.routes.js"
+import session from "express-session";
 
-import { productModel } from './models/products.models.js'
-import { msgsModel } from './models/messages.models.js'
+// Routes
+import userRouter from "./routes/users.routes.js";
+import productRouter from "./routes/products.routes.js";
+import cartRouter from "./routes/carts.routes.js";
+import messageRouter from "./routes/messages.routes.js";
+import sessionRouter from "./routes/session.routes.js";
 
-const app = express()
-const PORT = 8000
+// Models
+import { productModel } from "./models/products.models.js";
+import { messagesModel } from "./models/messages.models.js";
+import { userModel } from "./models/users.models.js";
 
+const app = express();
+const PORT = 8000;
+
+// Mongoose DB
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(async () => {console.log("DB is connected")})
+  .catch(() => console.log("Error in connection"));
+
+// MIDDLEWARES
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(process.env.SIGNED_COOKIE)); // Sirve para firmar la cookie
+
+// AUTH
+export function requireAuth(req, res, next) {
+  if (req.session.login) {
+    next(); // Si el usuario está autenticado permite el acceso
+  } else {
+    res.redirect("/login"); // Si no está autenticado, redirige a login
+  }
+}
+
+// Guardado de sesion
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+      mongoOptions: {
+        useNewUrlParser: true, // Manejo de las conexiones a la bbdd para conectarse al cluster
+        useUnifiedTopology: true, // Sirve para conectarnos al controlador actual de bbdd, manejo de de clusters de manera dinamica
+      },
+      ttl: 60, // Duracion en la bbdd en segundos
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+// SOCKET IO
 const serverExpress = app.listen(PORT, () => {
-	console.log(`Server on port ${PORT}`)
-})
-
-//Mongoose DB
-mongoose.connect('mongodb+srv://harmed2002:<password>@cluster0.0kdtqxd.mongodb.net/?retryWrites=true&w=majority')
-	.then(async () => console.log('DB is connected'))
-	.catch(() => console.log('Error in connection'))
-
-//Middlewares
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-
-//Handlebars
-app.engine('handlebars', engine())
-app.set('view engine', 'handlebars')
-app.set('views', path.resolve(__dirname, './views'))
-app.use('/static', express.static(path.join(__dirname, '/public')))
-app.use('/realTimeProducts', express.static(path.join(__dirname, '/public')))
-app.use('/chat', express.static(path.join(__dirname, '/public')))
-
-app.get('/realTimeProducts', (req, res) => {
-	res.render('realTimeProducts', {
-		js: "realTimeProducts.js",
-		css: "style.css",
-		title: "Products",
-	})
-})
-
-app.get('/static', (req, res) => {
-	res.render('home', {
-		js: "home.js",
-		css: "style.css",
-		title: "Home",
-	})
-})
-
-app.get('/chat', (req, res) => {
-	res.render('chat', {
-		globalCss: 'style.css',
-		title: 'Chat Socket.io',
-		js: 'chat.js',
-	});
+  console.log(`Server on port ${PORT}`);
 });
 
-//Socket
-const io = new Server(serverExpress)
-io.on('connection', (socket) => {
-	console.log("Servidor Socket.io conectado")
+// Rutas
+app.use("/api/users", userRouter);
+app.use("/api/products", productRouter);
+app.use("/api/carts", cartRouter);
+app.use("/api/messages", messageRouter);
+app.use("/api/session", sessionRouter);
 
-	socket.on("llamarProductos", async () => {
-		const products = await productModel.find()
-		socket.emit("productos", products)
-	})
+app.get("/setCookie", (req, res) => {
+  res
+    .cookie("CookieCookie", "Soy una cookie", { maxAge: 4000, signed: true })
+    .send("Cookie generada");
+});
 
-	socket.on("nuevoProducto", async (nuevoProd) => {
-		const { title, description, price, stock, category, code, thumbnail } = nuevoProd
-		await productModel.create({ title, description, price, stock, category, code, thumbnail })
-	})
+app.get("/getCookie", (req, res) => {
+  res.send(req.cookies.process.env.SIGNED_COOKIE);
+});
 
-	socket.on('newMessage', async ({ email, message }) => {
-		console.log(message)
-		await msgsModel.create({ email: email, message: message })
-		const messages = await msgsModel.find()
-		socket.emit("showMessages", messages)
-	})
+// HANDLEBARS
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
+app.set("views", path.resolve(__dirname, "./views"));
 
-	socket.on('loadChats', async () => {
-		const messages = await msgsModel.find()
-		socket.emit("showMessages", messages)
-	})
-})
+const io = new Server(serverExpress);
 
-//Routes
-app.use('/api/users', userRouter)
-app.use('/api/products', prodsRouter)
-app.use('/api/carts', cartRouter)
-app.use('/api/messages', messageRouter)
+// SOCKET IO
+io.on("connection", (socket) => {
+  console.log(`Servidor socket.io conectado`);
+  // REAL TIME PRODS SECTION
+  socket.on("nuevoProducto", async (newProd) => {
+    await productModel.create(newProd);
+    const totalProds = await productModel.find();
+    socket.emit("prodsData", totalProds);
+  });
+
+  socket.on("getProducts", async () => {
+    const totalProds = await productModel.find();
+    socket.emit("prodsData", totalProds);
+  });
+
+  socket.on("loadProducts", async ({ page = 1 }) => {
+    try {
+      const limit = 10; // Número de productos por página
+      const skip = (page - 1) * limit; // Cálculo del número de productos a omitir
+
+      const products = await productModel.find().skip(skip).limit(limit);
+
+      socket.emit("prodsData", products);
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  // CHAT WEBSOCKET
+  socket.on("newMessage", async ({ email, message }) => {
+    console.log(message);
+    await messagesModel.create({ email: email, message: message });
+    const messages = await messagesModel.find();
+    socket.emit("showMessages", messages);
+  });
+
+  socket.on("loadChats", async () => {
+    const messages = await messagesModel.find();
+    socket.emit("showMessages", messages);
+  });
+
+  // Signup
+  socket.on("newUser", async (newUser) => {
+    const user = await userModel.create(newUser);
+    socket.emit("alreadyUser", user);
+  });
+});
+
+app.use("/home", express.static(path.join(__dirname, "/public")));
+// Login && Sign Up
+app.use("/login", express.static(path.join(__dirname, "/public")));
+app.use("/logout", express.static(path.join(__dirname, "/public")));
+app.use("/signup", express.static(path.join(__dirname, "/public")));
+// Chat
+app.use("/chat", express.static(path.join(__dirname, "/public")));
+
+//Prods
+app.use("/realtimeproducts", express.static(path.join(__dirname, "/public")));
+
+// pagina /static
+app.get("/home", requireAuth, async (req, res) => {
+  res.render("index", {
+    globalCss: "globals.css",
+    title: "Home",
+    js: "main.js",
+  });
+});
+
+app.get("/login", async (req, res) => {
+  res.render("login", {
+    globalCss: "globals.css",
+    title: "Login",
+    js: "login.js",
+  });
+});
+app.get("/logout", async (req, res) => {
+  res.render("logout", {
+    globalCss: "globals.css",
+    title: "Logout",
+    js: "logout.js",
+  });
+});
+
+app.get("/signup", async (req, res) => {
+  res.render("signup", {
+    globalCss: "globals.css",
+    title: "Sign up",
+    js: "signup.js",
+  });
+});
+
+// pagina /chat socketIo
+app.get("/chat", requireAuth, async (req, res) => {
+  res.render("chat", {
+    globalCss: "globals.css",
+    title: "Chat Socket.io",
+    js: "chatScript.js",
+  });
+});
+
+// pagina /Productos
+app.get("/realtimeproducts", requireAuth, async (req, res) => {
+  res.render("realtimeproducts", {
+    globalCss: "globals.css",
+    title: "Productos",
+    js: "realtimeprodScript.js",
+  });
+});
