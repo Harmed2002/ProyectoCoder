@@ -31,8 +31,7 @@ const productSchema = new Schema({
         type: String,
         required: true,
         unique: true
-    },
-    thumbnail: []
+    }
 });
 
 productSchema.plugin(paginate)

@@ -19,6 +19,7 @@ import messageRouter from "./routes/messages.routes.js";
 import sessionRouter from "./routes/session.routes.js";
 
 // Models
+import { cartModel } from "./models/carts.models.js";
 import { productModel } from "./models/products.models.js";
 import { messagesModel } from "./models/messages.models.js";
 import { userModel } from "./models/users.models.js";
@@ -26,11 +27,15 @@ import { userModel } from "./models/users.models.js";
 const app = express();
 const PORT = 8000;
 
-// Mongoose DB
+// Conexión a la BD con Mongoose DB
 mongoose
 	.connect(process.env.MONGO_URL)
 	.then(async () => { console.log("DB is connected") })
 	.catch(() => console.log("Error in connection"));
+
+// const db = mongoose.connection;
+// db.useDb = "ecommerce";
+// console.log(db);
 
 // Middlewares
 app.use(express.json());
