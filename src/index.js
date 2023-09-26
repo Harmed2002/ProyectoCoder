@@ -60,7 +60,7 @@ app.use(
 				useNewUrlParser: true, // Establezco que la coneción al cluster es mediante URL
 				useUnifiedTopology: true, // Sirve para conectarnos al controlador actual de BD, manejo de de clusters de manera dinámica
 		},
-		ttl: 86400, // Duración de la sesión en la BD (en segundos)
+		ttl: 864000, // Duración de la sesión en la BD (en segundos)
 		}),
 		secret: process.env.SESSION_SECRET,
 		resave: false, // Fuerzo a que intente guardar aunque no tenga modificaciones en los datos
