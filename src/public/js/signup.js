@@ -1,16 +1,41 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const socket = io();
-  const signUpForm = document.getElementById("signUpForm");
+document.querySelector("#signUpForm").addEventListener("submit", async function (e) {
+	e.preventDefault();
+	console.log("entra")
+	const dataForm = new FormData(e.target);
+	const newUser = Object.fromEntries(dataForm);
 
-  signUpForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const dataForm = new FormData(e.target);
-    console.log(dataForm);
-    const newUser = Object.fromEntries(dataForm);
-    socket.emit("newUser", newUser);
-  });
+		try {
+			const resp = await fetch('/api/session/register', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(newUser)
+			});
 
-  socket.on("alreadyUser", (user) => {
-    window.location.href = "/login";
-  });
+			const info = await resp.json();
+
+			if (resp.status === 200 || resp.status === 401) {
+				window.location.href = "/home";
+			
+			} else {
+				Swal.fire({
+					icon: "error",
+					title: "Oops...",
+					text: info.respuesta,
+				});
+			}
+		
+		} catch (error) {
+			Swal.fire({
+				icon: "error",
+				title: "Oops...",
+				text: "Hubo un problema al registrar usuario",
+			});
+		}
+			
+});
+
+document.querySelector("#githubSignupButton").addEventListener("click", () => {
+	window.location.href = "/api/session/github";
 });

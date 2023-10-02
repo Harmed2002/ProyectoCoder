@@ -8,10 +8,11 @@ import { userModel } from '../models/users.models.js';
 const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
-	// Registro de usuarios
+	
+	// Registro de usuario
 	passport.use('register', new LocalStrategy(
 		{ passReqToCallback: true, usernameField: 'email' }, async (req, username, password, done) => {
-			// Registro de usuario
+		
 			const { first_name, last_name, email, age } = req.body;
 
 			try {
@@ -22,8 +23,9 @@ const initializePassport = () => {
 					return done(null, false);
 				}
 
-				// Si no existe, creamos el usuario
+				// Si no existe, obtenemos el hash y creamos el usuario
 				const passwordHash = createHash(password); // Encriptamos la contraseña
+
 				const userCreated = await userModel.create({
 					first_name : first_name, 
 					last_name : last_name, 

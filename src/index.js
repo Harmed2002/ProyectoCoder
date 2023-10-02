@@ -162,10 +162,10 @@ io.on("connection", (socket) => {
 	});
 
 	// Signup
-	socket.on("newUser", async (newUser) => {
-		const user = await userModel.create(newUser);
-		socket.emit("alreadyUser", user);
-	});
+	// socket.on("newUser", async (newUser) => {
+	// 	const user = await userModel.create(newUser);
+	// 	socket.emit("alreadyUser", user);
+	// });
 });
 
 app.use("/home", express.static(path.join(__dirname, "/public")));

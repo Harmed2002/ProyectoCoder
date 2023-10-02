@@ -1,37 +1,36 @@
+document.querySelector("#loginForm").addEventListener("submit", async function (e) {
+	e.preventDefault();
 
-document.querySelector("#loginForm").addEventListener("submit", async function(e){
-  e.preventDefault();
+	const email = document.querySelector("#email").value;
+	const password = document.querySelector("#password").value;
 
-  const email = document.querySelector("#email").value;
-  const password = document.querySelector("#password").value;
-
-  try {
-    const resp = await fetch("/api/session/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
-    const info = await resp.json();
-
-    if (resp.status === 200 || resp.status === 401) {
-      window.location.href = "/home";
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: info.respuesta,
-      });
-    }
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "Hubo un problema al iniciar sesión",
-    });
-  }
+	try {
+		const resp = await fetch("/api/session/login", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({email: email,password: password,}),
+		});
+		
+		const info = await resp.json();
+console.log("info", info)
+		if (resp.status === 200 || resp.status === 401) {
+			window.location.href = "/home";
+		
+		} else {
+			Swal.fire({
+				icon: "error",
+				title: "Oops...",
+				text: info.respuesta,
+			});
+		}
+	
+	} catch (error) {
+		Swal.fire({
+			icon: "error",
+			title: "Oops...",
+			text: "Hubo un problema al iniciar sesión",
+		});
+	}
 });
