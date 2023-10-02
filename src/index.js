@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
+import passport from "passport";
+import initializePassport from "./config/passport.js"; // Archivo de estrategia
 
 import path from "path";
 import { engine } from "express-handlebars";
@@ -67,6 +69,11 @@ app.use(
 		saveUninitialized: false, // Fuerzo a que intente guardar aunque no tenga más datos que el id de sesión
 	})
 );
+
+// Middleware de Passport
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Server
 const serverExpress = app.listen(PORT, () => {

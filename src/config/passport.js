@@ -1,7 +1,8 @@
 import local from 'passport-local'; // Importo la estrategia
-import passport, { initialize } from 'passport';
-import { createHash, validatePassword } from '../utils/bcrypt';
-import { userModel } from '../models/users.models';
+// import passport, { initialize, use } from 'passport';
+import passport from 'passport';
+import { createHash, validatePassword } from '../utils/bcrypt.js';
+import { userModel } from '../models/users.models.js';
 
 // Defino la estrategia a utilizar
 const LocalStrategy = local.Strategy;
@@ -43,6 +44,7 @@ const initializePassport = () => {
 	passport.use('login', new LocalStrategy(
 		{ usernameField: 'email' }, async (username, password, done) => {
 			try {
+				// Busco el usuario por email
 				const user = await userModel.findOne({ email: username });
 
 				// Caso de error: usuario no existe, no puede loguearse
@@ -50,9 +52,31 @@ const initializePassport = () => {
 					return done(null, false);
 				}
 
+				// Si el usuario existe, valido el password
+				if (validatePassword(password, user.password)) {
+					return done(null, user);
+				}
+
+				// Si el usuario existe, pero el password es incorrecto, no puede loguearse
+				return done(null, false);
+
 			} catch (error) {
 				return done(error);
 			}
 		}
 	))
+
+	// Se inicializa la sesión del usuario
+	passport.serializeUser((user, done) => {
+		done(null, user._id);
+	})
+
+	// Se elimina la sesión del usuario
+	passport.deserializeUser(async (id, done) => {
+		const user = await userModel.findById(id); // Obtenemos el usuario
+
+		done(null, user);
+	})
 }
+
+export default initializePassport

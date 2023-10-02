@@ -1,36 +1,43 @@
 import { Router } from "express";
-import { userModel } from "../models/users.models.js";
+import passport from "passport";
 
 const sessionRouter = Router();
 
-sessionRouter.post("/login", async (req, res) => {
-	const { email, password } = req.body;
-
+// Configuramos el login de usuario
+sessionRouter.post("/login", passport.authenticate('login'), async (req, res) => {
 	try {
-		if (req.session.login) {
-			res.status(200).send({ respuesta: "Login ya existente" });
+		// Si passport no nos devuelve el usuario, hubo error
+		if (!req.user) {
+			return res.status(401).send({ mensaje: "Usuario inválido" });
 		}
 
-		const user = await userModel.findOne({ email: email });
-		// console.log("user", user)
-
-		if (user) {
-			if (user.password == password) {
-				req.session.login = true;
-
-				// Añadir una cookie indicando que el usuario está autenticado
-				res.cookie("authenticated", "true", { maxAge: 60 * 60 * 1000 }); // Expira en 1 hora
-				res.cookie("username", user.first_name, { maxAge: 60 * 60 * 1000 }); // Establece la cookie con el nombre de usuario
-
-				res.status(200).send({ respuesta: "Login validado", mensaje: user });
-			} else {
-				res.status(401).send({ respuesta: "Contraseña no válida", mensaje: password });
-			}
-		} else {
-			res.status(404).send({ respuesta: "Este Usuario no existe!", mensaje: user });
+		// Asigno los campos de los datos de usuario
+		req.session.user = {
+			first_name: req.user.first_name,
+			last_name: req.user.last_name,
+			age: req.user.age,
+			email: req.user.email
 		}
+
+		res.status(200).send({ payload: req.user })
+
 	} catch (error) {
-		res.status(400).send({ respuesta: "Error en login", mensaje: error });
+		res.status(500).send({ mensaje: `Error al iniciar sesión ${error}` });
+	}
+});
+
+// Configuramos el registro de usuario
+sessionRouter.post("/register", passport.authenticate('register'), async (req, res) => {
+	try {
+		// Si passport no nos devuelve el usuario, hubo error
+		if (!req.user) {
+			return res.status(400).send({ mensaje: "Usuario ya registrado" });
+		}
+
+		res.status(200).send({ mensaje: "Usuario registrado" })
+
+	} catch (error) {
+		res.status(500).send({ mensaje: `Error al registrar usuario ${error}` });
 	}
 });
 
