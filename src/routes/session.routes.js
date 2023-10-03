@@ -61,13 +61,12 @@ sessionRouter.get("/githubCallback", passport.authenticate("github", {scope: ["u
 
 // Configuramos el logout de usuario
 sessionRouter.get("/logout", async (req, res) => {
-	console.log(req.session.login)
 	if (req.session.login) {
 		req.session.destroy(); // Destruyo session
 		res.clearCookie('username'); // Elimina la cookie del nombre de usuario
 		res.clearCookie('authenticated'); // Elimina la cookie del nombre de usuario
-
 	}
+
 	res.status(200).send({ respuesta: "Usuario deslogueado" });
 });
 
