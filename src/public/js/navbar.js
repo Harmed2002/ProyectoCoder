@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const userNameElement = document.querySelector("#userName");
 
 	const authenticated = document.cookie.includes("authenticated=true");
+	// console.log("authenticated", authenticated)
 	if (authenticated) {
 		navButton.textContent = "Signout";
 		const username = getCookie("username");

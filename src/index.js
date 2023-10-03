@@ -45,13 +45,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.SIGNED_COOKIE)); // Para firma de Cookie
 
 // Auth
-export function requireAuth(req, res, next) {
-	if (req.session.login) {
-		next(); // Si el usuario está autenticado permite el acceso
-	} else {
-		res.redirect("/login"); // Si no está autenticado, redirige al login
-	}
-};
+// export function requireAuth(req, res, next) {
+// 	if (req.session.login) {
+// 		next(); // Si el usuario está autenticado permite el acceso
+// 	} else {
+// 		res.redirect("/login"); // Si no está autenticado, redirige al login
+// 	}
+// };
 
 // Middleware de sesión
 app.use(
@@ -182,7 +182,6 @@ app.use("/chat", express.static(path.join(__dirname, "/public")));
 app.use("/realtimeproducts", express.static(path.join(__dirname, "/public")));
 
 // pagina /static
-// app.get("/home", requireAuth, async (req, res) => {
 app.get("/home", async (req, res) => {
 	res.render("index", {
 		globalCss: "globals.css",
@@ -219,7 +218,7 @@ app.get("/signup", async (req, res) => {
 });
 
 // pagina /chat socketIo
-app.get("/chat", requireAuth, async (req, res) => {
+app.get("/chat", async (req, res) => {
 	res.render("chat", {
 		globalCss: "globals.css",
 		title: "Chat Socket.io",
@@ -228,7 +227,7 @@ app.get("/chat", requireAuth, async (req, res) => {
 });
 
 // pagina /Productos
-app.get("/realtimeproducts", requireAuth, async (req, res) => {
+app.get("/realtimeproducts", async (req, res) => {
 	res.render("realtimeproducts", {
 		globalCss: "globals.css",
 		title: "Productos",

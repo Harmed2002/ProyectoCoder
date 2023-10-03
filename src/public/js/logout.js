@@ -7,8 +7,13 @@ window.onload = async function() {
             }
         });
         window.location.href = "/login";
-} catch (error) {
-        console.error(error);
-        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Hubo un error al intentar cerrar sesión' });
-}
+
+    } catch (error) {
+            console.error(error);
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Oops...', 
+                text: 'Hubo un error al intentar cerrar sesión' 
+            });
+    }
 }

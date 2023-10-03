@@ -14,7 +14,6 @@ document.querySelector("#loginForm").addEventListener("submit", async function (
 					body: JSON.stringify({email: email, password: password}),
 		})
 		.then(response => {
-			console.log(response)
 			if (response.ok) 
 				window.location.href = "/home";
 		})

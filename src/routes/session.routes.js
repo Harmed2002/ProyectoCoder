@@ -6,7 +6,7 @@ const sessionRouter = Router();
 // Configuramos el login de usuario
 sessionRouter.post("/login", passport.authenticate('login'), async (req, res) => {
 	try {
-		// Si passport no nos devuelve el usuario, hubo error
+		// Si Passport no nos devuelve el usuario, hubo error
 		if (!req.user) {
 			return res.status(401).send({ mensaje: "Usuario inválido" });
 		}
@@ -18,6 +18,11 @@ sessionRouter.post("/login", passport.authenticate('login'), async (req, res) =>
 			age: req.user.age,
 			email: req.user.email
 		}
+
+		// Se crea una cookie indicando que el usuario está autenticado
+		res.cookie("authenticated", "true", { maxAge: 60 * 60 * 1000 }); // Expira en 1 hora
+		res.cookie("username", req.session.user.first_name, { maxAge: 60 * 60 * 1000 }); // Establece la cookie con el nombre de usuario
+
 
 		res.status(200).send({ payload: req.user })
 
@@ -41,22 +46,22 @@ sessionRouter.post("/register", passport.authenticate('register'), async (req, r
 	}
 });
 
-sessionRouter.get("/github",
-	passport.authenticate("github", {scope: ["user:email"],}),
-	async (req, res) => {
-		res.status(200).send({ mensaje: 'Usuario registrado con github' })
+// Configuramos el registro de usuario con Github
+sessionRouter.get("/github", passport.authenticate("github", {scope: ["user:email"],}), async (req, res) => {
+		res.status(200).send({ mensaje: 'Usuario registrado con Github' })
 	}
 );
 
-sessionRouter.get("/githubCallback",
-	passport.authenticate("github", {scope: ["user:email"],}),
-	async (req, res) => {
+// Configuramos el inicio de sesión con Github
+sessionRouter.get("/githubCallback", passport.authenticate("github", {scope: ["user:email"],}), async (req, res) => {
 		req.session.user = req.user;
 		res.status(200).redirect('/home');
 	}
 );
 
+// Configuramos el logout de usuario
 sessionRouter.get("/logout", async (req, res) => {
+	console.log(req.session.login)
 	if (req.session.login) {
 		req.session.destroy(); // Destruyo session
 		res.clearCookie('username'); // Elimina la cookie del nombre de usuario
