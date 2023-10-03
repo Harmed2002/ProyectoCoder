@@ -182,7 +182,8 @@ app.use("/chat", express.static(path.join(__dirname, "/public")));
 app.use("/realtimeproducts", express.static(path.join(__dirname, "/public")));
 
 // pagina /static
-app.get("/home", requireAuth, async (req, res) => {
+// app.get("/home", requireAuth, async (req, res) => {
+app.get("/home", async (req, res) => {
 	res.render("index", {
 		globalCss: "globals.css",
 		title: "Home",

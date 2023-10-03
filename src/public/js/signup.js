@@ -1,6 +1,6 @@
 document.querySelector("#signUpForm").addEventListener("submit", async function (e) {
 	e.preventDefault();
-	console.log("entra")
+
 	const dataForm = new FormData(e.target);
 	const newUser = Object.fromEntries(dataForm);
 

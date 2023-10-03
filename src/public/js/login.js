@@ -5,32 +5,29 @@ document.querySelector("#loginForm").addEventListener("submit", async function (
 	const password = document.querySelector("#password").value;
 
 	try {
-		const resp = await fetch("/api/session/login", {
-					method: "POST",
+		await fetch('/api/session/login', {
+					method: 'POST',
+					redirect: 'follow',
 					headers: {
-						"Content-Type": "application/json",
+						'Content-Type': 'application/json',
 					},
-					body: JSON.stringify({email: email,password: password,}),
-		});
-		
-		const info = await resp.json();
-console.log("info", info)
-		if (resp.status === 200 || resp.status === 401) {
-			window.location.href = "/home";
-		
-		} else {
-			Swal.fire({
-				icon: "error",
-				title: "Oops...",
-				text: info.respuesta,
-			});
-		}
-	
+					body: JSON.stringify({email: email, password: password}),
+		})
+		.then(response => {
+			console.log(response)
+			if (response.ok) 
+				window.location.href = "/home";
+		})
+		.catch(error => {
+			console.error(error);
+		})
+
 	} catch (error) {
+		console.error(error);
 		Swal.fire({
 			icon: "error",
 			title: "Oops...",
-			text: "Hubo un problema al iniciar sesión",
+			text: "Hubo un problema al intentar iniciar sesión",
 		});
 	}
 });
