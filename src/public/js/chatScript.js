@@ -11,7 +11,7 @@ Swal.fire({
     text: "Por favor ingrese su usuario",
     input: "text",
     inputValidator: (valor) => {
-        return !valor && "ingrese un usuario correctamente";
+        return !valor && "Ingrese un usuario válido";
     },
     allowOutsideClick: false,
 }).then((resultado) => {
@@ -33,12 +33,11 @@ socket.on("showMessages", (arrayMessages) => {
     arrayMessages.forEach((element) => {
         parrafosMensajes.innerHTML += `
             <li class="liParrafosMensajes">
-             <div class="spanContainer">
-                <p>${element.postTime}</p>
-                <p>${element.email}:</p>
-             </div>
-            <p class="userMessage">${element.message}
-            </p>
+                <div class="spanContainer">
+                    <p>${element.postTime}</p>
+                    <p>${element.email}:</p>
+                </div>
+                <p class="userMessage">${element.message}</p>
             </li>
         `;
     });

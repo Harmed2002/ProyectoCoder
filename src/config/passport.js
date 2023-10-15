@@ -1,14 +1,38 @@
 import local from 'passport-local'; // Importo la estrategia
-// import passport, { initialize, use } from 'passport';
 import GithubStrategy from "passport-github2";
+import jwt from 'passport-jwt';
 import passport from 'passport';
 import { createHash, validatePassword } from '../utils/bcrypt.js';
 import { userModel } from '../models/users.models.js';
 
 // Defino la estrategia a utilizar
 const LocalStrategy = local.Strategy;
+const JWTStrategy = jwt.Strategy;
+const ExtractJWT = jwt.ExtractJwt; // Para extraer el token de las cookies
 
 const initializePassport = () => {
+
+	// Se captura la info. de la cookie
+	const cookieExtractor = req => {
+		console.log(req.cookies);
+		const token = req.cookies.jwtCookie ? req.cookies.jwtCookie : {};
+		console.log(token);
+		return token;
+	}
+
+	// Creo la estrategia de JWT
+	passport.use('jwt', new JWTStrategy({
+		jwtFromRequest: ExtractJWT.fromExtractors({cookieExtractor}), // El token va a venir desde cookieExtractor
+		secretOrKey: process.env.JWT_SECRET // Palabra secreta de los tokens
+	}, async(jwt_payload, done) => { // jwt_payload = info. del token (en este caso, datos del cliente)
+		try {
+			console.log(jwt_payload);
+			return done(null, jwt_payload);
+
+		} catch (error) {
+			return done(error);
+		}
+	}))
 	
 	// Registro de usuario
 	passport.use('register', new LocalStrategy(
