@@ -3,7 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
 import passport from "passport";
-import initializePassport from "./config/passport.js"; // Archivo de estrategia
+import initializePassport from "./config/passport.js"; // Archivo de estrategias
 
 import path from "path";
 import { engine } from "express-handlebars";

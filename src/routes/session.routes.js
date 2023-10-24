@@ -70,4 +70,9 @@ sessionRouter.get("/logout", async (req, res) => {
 	res.status(200).send({ respuesta: "Usuario deslogueado" });
 });
 
+// Probamos la generación de cookies
+sessionRouter.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
+	res.send(req.user);
+});
+
 export default sessionRouter

@@ -1,7 +1,7 @@
 import local from 'passport-local'; // Importo la estrategia
 import GithubStrategy from "passport-github2";
-import jwt from 'passport-jwt';
 import passport from 'passport';
+import jwt from 'passport-jwt';
 import { createHash, validatePassword } from '../utils/bcrypt.js';
 import { userModel } from '../models/users.models.js';
 
@@ -13,20 +13,35 @@ const ExtractJWT = jwt.ExtractJwt; // Para extraer el token de las cookies
 const initializePassport = () => {
 
 	// Se captura la info. de la cookie
+	// const cookieExtractor = req => {
+	// 	const token = req.cookies.jwtCookie ? req.cookies.jwtCookie : {};
+
+	// 	return token;
+	// }
+
 	const cookieExtractor = req => {
-		console.log(req.cookies);
-		const token = req.cookies.jwtCookie ? req.cookies.jwtCookie : {};
-		console.log(token);
+		let token = null;
+
+		if (req && req.cookies) {
+			// console.log('jwtCookie1', req.cookies.jwtCookie)
+			const token = req.cookies.jwtCookie ? req.cookies.jwtCookie : {};
+			// console.log("TOKEN1", token);
+			return token;
+		}
+
+		// console.log("TOKEN1", token);
 		return token;
 	}
 
+
 	// Creo la estrategia de JWT
 	passport.use('jwt', new JWTStrategy({
-		jwtFromRequest: ExtractJWT.fromExtractors({cookieExtractor}), // El token va a venir desde cookieExtractor
+		// jwtFromRequest: ExtractJWT.fromExtractors({ cookieExtractor }), // El token va a venir desde cookieExtractor
+		jwtFromRequest: ExtractJWT.fromExtractors([ cookieExtractor ]), // El token va a venir desde cookieExtractor
 		secretOrKey: process.env.JWT_SECRET // Palabra secreta de los tokens
 	}, async(jwt_payload, done) => { // jwt_payload = info. del token (en este caso, datos del cliente)
 		try {
-			console.log(jwt_payload);
+			console.log("jwt_payload", jwt_payload);
 			return done(null, jwt_payload);
 
 		} catch (error) {
