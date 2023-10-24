@@ -1,8 +1,8 @@
-// import 'dotenv/config';
+import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 
 export const generateToken = (user) => {
-	const token = jwt.sign({ user }, "coderhouse2023", { expiresIn: '12h' }); // Param 1: objeto asociado al token, param 2: clave privada para el cifrado, param 3: tiempo de expiración
+	const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: '12h' }); // Param 1: objeto asociado al token, param 2: clave privada para el cifrado, param 3: tiempo de expiración
 	// console.log("TOKEN", token);
 
 }
