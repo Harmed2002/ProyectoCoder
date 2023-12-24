@@ -12,13 +12,14 @@ import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 
 import session from "express-session";
+import router from './routes/index.routes.js';
 
 // Routes
-import userRouter from "./routes/users.routes.js";
-import productRouter from "./routes/products.routes.js";
-import cartRouter from "./routes/carts.routes.js";
-import messageRouter from "./routes/messages.routes.js";
-import sessionRouter from "./routes/session.routes.js";
+// import userRouter from "./routes/users.routes.js";
+// import productRouter from "./routes/products.routes.js";
+// import cartRouter from "./routes/carts.routes.js";
+// import messageRouter from "./routes/messages.routes.js";
+// import sessionRouter from "./routes/session.routes.js";
 
 // Models
 import { cartModel } from "./models/carts.models.js";
@@ -92,11 +93,12 @@ app.get('/session', (req, res) => {
 })
 
 // Rutas
-app.use("/api/users", userRouter);
-app.use("/api/products", productRouter);
-app.use("/api/carts", cartRouter);
-app.use("/api/messages", messageRouter);
-app.use("/api/session", sessionRouter);
+// app.use("/api/users", userRouter);
+// app.use("/api/products", productRouter);
+// app.use("/api/carts", cartRouter);
+// app.use("/api/messages", messageRouter);
+// app.use("/api/session", sessionRouter);
+app.use('/', router); // Esto reemplaza lo comentado arriba
 
 // Creación de cookie
 app.get("/setCookie", (req, res) => {

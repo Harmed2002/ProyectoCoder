@@ -1,5 +1,7 @@
 import { Router } from "express";
 import passport from "passport";
+import { passportError, authorization } from "../utils/messagesError.js";
+import { generateToken } from "../utils/jwt.js";
 
 const sessionRouter = Router();
 
@@ -19,9 +21,15 @@ sessionRouter.post("/login", passport.authenticate('login'), async (req, res) =>
 			email: req.user.email
 		}
 
+		// Genero el token de JWT
+		const token = generateToken(req.user);
+
+		// El token lo envío en una cookie
+		res.cookie("jwtCookie", token, { maxAge: 60 * 60 * 12 * 1000 }); // 12 horas en milisegundos
+
 		// Se crea una cookie indicando que el usuario está autenticado
-		res.cookie("authenticated", "true", { maxAge: 60 * 60 * 1000 }); // Expira en 1 hora
-		res.cookie("username", req.session.user.first_name, { maxAge: 60 * 60 * 1000 }); // Establece la cookie con el nombre de usuario
+		// res.cookie("authenticated", "true", { maxAge: 60 * 60 * 1000 }); // Expira en 1 hora
+		// res.cookie("username", req.session.user.first_name, { maxAge: 60 * 60 * 1000 }); // Establece la cookie con el nombre de usuario
 
 
 		res.status(200).send({ payload: req.user })
@@ -71,8 +79,19 @@ sessionRouter.get("/logout", async (req, res) => {
 });
 
 // Probamos la generación de cookies
-sessionRouter.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
+// sessionRouter.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
+// 	res.send(req.user);
+// });
+
+sessionRouter.get('/current', passportError('jwt'), authorization('user'), (req, res) => {
 	res.send(req.user);
 });
+
+// Probamos que el token enviado sea válido (misma contraeña de encriptación)
+sessionRouter.get('/testJWT', passport.authenticate('jwt', {session: false}), (req, res) => {
+	console.log(req);
+	res.send(req.user);
+});
+
 
 export default sessionRouter
